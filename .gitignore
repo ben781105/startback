@@ -1,0 +1,19 @@
+# Python virtual environment
+env/
+venv/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Django environment variables
+.env
+
+# SQLite database
+db.sqlite3
+
+# Logs
+*.log
+
+# VSCode config
+.vscode/

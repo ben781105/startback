@@ -9,7 +9,7 @@ __pycache__/
 # Django environment variables
 .env
 
-# SQLite database
+# SQLite datab1`ase
 db.sqlite3
 
 # Logs

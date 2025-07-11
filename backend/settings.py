@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-+@v@_+s!yxhd=rosjk8ip(x031tehr10mba^8$v6ywn-d4u2u)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost","127.0.0.1"]
 
 
 # Application definition
@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     'sms',
     'rest_framework',
     'accounts',
-     'rest_framework_simplejwt',
+    'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 SIMPLE_JWT = {
@@ -44,11 +45,22 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  
+    "http://localhost:5174",  
+    "http://localhost:5175",
+    "http://localhost:5176",
+   
 ]
 
 REST_FRAMEWORK = {
@@ -59,6 +71,8 @@ REST_FRAMEWORK = {
     )
     
 }
+
+
 
 ROOT_URLCONF = 'backend.urls'
 

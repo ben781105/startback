@@ -2,7 +2,10 @@
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -11,12 +14,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+@v@_+s!yxhd=rosjk8ip(x031tehr10mba^8$v6ywn-d4u2u)'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ["localhost","127.0.0.1"]
+
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
+
 
 
 # Application definition
@@ -100,16 +105,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'smsdb',
-        'USER':'root',
-        'PASSWORD':'ben@rd1123',
-        'HOST':'localhost',
-        'PORT':'3306',
-        'OPTIONS':{
-            'charset':'utf8mb4'
+        'NAME': os.environ.get('MYSQL_DATABASE') or'smsdb',
+        'USER': os.environ.get('MYSQLUSER') or 'root',
+        'PASSWORD': os.environ.get('MYSQLPASSWORD') or 'ben@rd1123', 
+        'HOST': os.environ.get('MYSQL_HOST') or 'localhost',
+        'PORT': os.environ.get('MYSQLPORT',) or '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
         }
     }
 }
+
 
 
 # Password validation
@@ -155,6 +161,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL ='accounts.CustomUser'
 
-CELERY_BROKER_URL ='redis://localhost:6379/0'
+CELERY_BROKER_URL =os.environ.get("CELERY_BROKER_URL","redis://localhost:6379/0")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

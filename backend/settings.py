@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 
 
 
@@ -105,11 +105,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQL_DATABASE') or'smsdb',
-        'USER': os.environ.get('MYSQLUSER') or 'root',
-        'PASSWORD': os.environ.get('MYSQLPASSWORD') or 'ben@rd1123', 
-        'HOST': os.environ.get('MYSQL_HOST') or 'localhost',
-        'PORT': os.environ.get('MYSQLPORT',) or '3306',
+        'NAME': os.environ.get('MySQL_DATABASE','smsdb'),
+        'USER': os.environ.get('MySQL_USER','root'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
+        'HOST': os.environ.get('MySQL_HOST',"localhost"),
+        'PORT': os.environ.get('MySQL_PORT','3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
         }
@@ -161,6 +161,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL ='accounts.CustomUser'
 
-CELERY_BROKER_URL =os.environ.get("CELERY_BROKER_URL","redis://localhost:6379/0")
+CELERY_BROKER_URL =os.environ.get("CELERY_BROKER_URL")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

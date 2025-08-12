@@ -8,8 +8,11 @@ from .serializers import RegisterSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from .models import ContactGroup,SMSHistory,Contact
+from rest_framework.pagination import PageNumberPagination
 from .serializers import ContactGroupSerializer, ContactSerializer
 from django.db import IntegrityError
+from django.db.models import Count
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -88,6 +91,31 @@ def create_group(request):
     group = ContactGroup.objects.create(user=request.user, name=name)
     return Response(ContactGroupSerializer(group).data)
 
+
+from rest_framework.pagination import PageNumberPagination
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_groups(request):
+    user = request.user
+    search_query = request.GET.get('search', '')
+
+    groups = ContactGroup.objects.filter(user=user)
+
+    if search_query:
+        groups = groups.filter(name__icontains=search_query)
+
+    
+    groups = groups.annotate(contact_count=Count('contacts'))
+
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+    paginated_groups = paginator.paginate_queryset(groups, request)
+
+    serializer = ContactGroupSerializer(paginated_groups, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_contact_to_group(request):

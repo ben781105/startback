@@ -20,7 +20,8 @@ class ContactSerializer(serializers.ModelSerializer):
 
 class ContactGroupSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)
+    contact_count = serializers.IntegerField( read_only=True)
 
     class Meta:
         model = ContactGroup
-        fields = ['id', 'name', 'contacts']
+        fields = ['id', 'name', 'contacts','contact_count']

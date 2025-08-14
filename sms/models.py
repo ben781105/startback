@@ -13,7 +13,7 @@ class ContactGroup(models.Model):
     
 class Contact(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.TextField(unique=True)
     group = models.ForeignKey(ContactGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='contacts')
     created_at = models.DateTimeField(auto_now_add=True)
 

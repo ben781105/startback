@@ -9,7 +9,7 @@ urlpatterns = [
     path('groups/create/', views.create_group,name='create_group'),
     path('groups/<int:group_id>/update/', views.update_group,name='update_group'),
     path('groups/<int:group_id>/delete/', views.delete_group,name='delete_group'),
-    path('contacts/add/', views.add_contact_to_group,name='add_contact_to_group'),
+    path('groups/<int:group_id>/contacts/add/', views.add_contacts_to_group,name='add_contact_to_group'),
     path('contacts/<int:contact_id>/delete/', views.delete_contact,name='delete_contact'),
     path('groups/',views.get_groups,name='get_groups'),
 

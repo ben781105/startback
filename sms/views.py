@@ -116,27 +116,33 @@ def get_groups(request):
     return paginator.get_paginated_response(serializer.data)
 
     
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def add_contact_to_group(request):
-    group_id = request.data.get('group_id')
-    phone_number = request.data.get('phone_number')
+
+def add_contacts_to_group(request, group_id):
+
+    phone_numbers = request.data.get('phone_numbers', [])  # Expecting a list
+
+    if  not phone_numbers:
+        return Response({"error": "phone_numbers are required"}, status=400)
 
     try:
-        group = ContactGroup.objects.get(id=group_id, user=request.user)
+        group = ContactGroup.objects.get(id=group_id,user=request.user)
     except ContactGroup.DoesNotExist:
-        return Response({'error': 'Group not found'}, status=404)
+        return Response({"error": "Group not found"}, status=404)
 
-    try:
-        contact = Contact.objects.create(
-            user=request.user,
-            phone_number=phone_number,
-            group=group
-        )
-    except IntegrityError:
-        return Response({'error': 'contact already exists'}, status=400)
+    added_contacts = []
+    for phone in phone_numbers:
+        phone = phone.strip()
+        if not phone:
+            continue
+        contact, _ = Contact.objects.get_or_create(phone_number=phone,user=request.user)
+        group.contacts.add(contact)
+        added_contacts.append(phone)
 
-    return Response(ContactSerializer(contact).data)
+    return Response({"message": f"{len(added_contacts)} contacts added to group '{group.name}'"})
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

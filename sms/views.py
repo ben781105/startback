@@ -20,7 +20,7 @@ def send_sms(request):
     user = request.user
     message = request.data.get('message')
     recipients = request.data.get('recipients')  
-    group_id = request.data.get('group_id')      
+    group_ids = request.data.get('group_ids')      
 
     if not message:
         return Response({'error': 'Message content is required.'}, status=400)
@@ -28,23 +28,31 @@ def send_sms(request):
     phone_numbers = []
 
     
-    if group_id:
-        try:
-            group = ContactGroup.objects.get(id=group_id, user=user)
-            contacts = group.contacts.all()
-            phone_numbers = [contact.phone_number for contact in contacts]
-        except ContactGroup.DoesNotExist:
-            return Response({'error': 'Group not found.'}, status=404)
+    if group_ids:
+        if isinstance(group_ids, int) or isinstance(group_ids, str):
+            group_ids = [group_ids]  # normalize to list
+
+        
+        for gid in group_ids:
+            try:
+                group = ContactGroup.objects.get(id=gid, user=user)
+                contacts = group.contacts.all()
+                phone_numbers.extend([contact.phone_number for contact in contacts])
+            except ContactGroup.DoesNotExist:
+                return Response({'error': f'Group with id {gid} not found.'}, status=404)
 
     
     if recipients:
         if isinstance(recipients, str):
             recipients = [r.strip() for r in recipients.replace('\n', ',').split(',')]
-        phone_numbers += recipients 
+        phone_numbers.extend(recipients)
 
-    
+
+    phone_numbers = list(set(phone_numbers))
+
     if not phone_numbers:
         return Response({'error': 'No recipients provided.'}, status=400)
+
 
     
     send_bulk_sms_task.delay(message, phone_numbers)
@@ -121,8 +129,7 @@ def get_groups(request):
 @permission_classes([IsAuthenticated])
 
 def add_contacts_to_group(request, group_id):
-
-    phone_numbers = request.data.get('phone_numbers', [])  # Expecting a list
+    phone_numbers = request.data.get('phone_numbers', [])  
 
     if  not phone_numbers:
         return Response({"error": "phone_numbers are required"}, status=400)
@@ -141,7 +148,10 @@ def add_contacts_to_group(request, group_id):
         group.contacts.add(contact)
         added_contacts.append(phone)
 
-    return Response({"message": f"{len(added_contacts)} contacts added to group '{group.name}'"})
+    return Response({
+    "added_contacts": added_contacts,  
+    "group": group.id
+})
 
 
 @api_view(['DELETE'])
@@ -182,3 +192,39 @@ def update_group(request, group_id):
     group.name = new_name
     group.save()
     return Response(ContactGroupSerializer(group).data)
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import SMSHistory
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_sms_history(request):
+    user = request.user
+    search_query = request.GET.get('search', '')  # optional search query
+
+    
+    messages = SMSHistory.objects.filter(user=user)
+    if search_query:
+        messages = messages.filter(message__icontains=search_query)
+
+    messages = messages.order_by('-sent_at')  # recent first
+
+  
+    paginator = PageNumberPagination()
+    paginator.page_size = 10  
+    result_page = paginator.paginate_queryset(messages, request)
+
+    history = [
+        {
+            "message": sms.message,
+            "number_of_recipients": len(sms.recipients) if sms.recipients else 0,
+            "status": "Message sent successfully" if sms.status == 'sent' else "Message not sent",
+            "sent_at": sms.sent_at
+        }
+        for sms in result_page
+    ]
+
+    return paginator.get_paginated_response(history)

@@ -12,5 +12,6 @@ urlpatterns = [
     path('groups/<int:group_id>/contacts/add/', views.add_contacts_to_group,name='add_contact_to_group'),
     path('contacts/<int:contact_id>/delete/', views.delete_contact,name='delete_contact'),
     path('groups/',views.get_groups,name='get_groups'),
+    path('smshistory/',views.get_sms_history,name='get_sms_history'),
 
 ]

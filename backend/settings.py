@@ -66,7 +66,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5174",  
     "http://localhost:5175",
     "http://localhost:5176",
-    "https://startfront.vercel.app"
+    "https://startfront.vercel.app",
+    "https://send-it-znjy.onrender.com"
    
 ]
 

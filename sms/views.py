@@ -97,7 +97,8 @@ def create_group(request):
         return Response({'error': 'Group name is required'}, status=400)
     
     group = ContactGroup.objects.create(user=request.user, name=name)
-    return Response(ContactGroupSerializer(group).data)
+    serializer = ContactGroupSerializer(group)
+    return Response(serializer.data, status=201)
 
 
 from rest_framework.pagination import PageNumberPagination

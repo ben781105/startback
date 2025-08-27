@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django-extensions',
 ]
 
 SIMPLE_JWT = {

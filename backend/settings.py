@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 
-ALLOWED_HOSTS = ["*"]#os.environ.get("ALLOWED_HOSTS","").split(",")
+ALLOWED_HOSTS =os.environ.get("ALLOWED_HOSTS","").split(",")
 
 
 import dj_database_url
@@ -67,8 +67,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5174",  
     "http://localhost:5175",
     "http://localhost:5176",
-    "https://startfront.vercel.app",
-    "https://send-it-znjy.onrender.com"
+    "https://send-it-znjy.onrender.com",
    
 ]
 CSRF_TRUSTED_ORIGINS = [

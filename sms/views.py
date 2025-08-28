@@ -12,6 +12,8 @@ from rest_framework.pagination import PageNumberPagination
 from .serializers import ContactGroupSerializer, ContactSerializer
 from django.db import IntegrityError
 from django.db.models import Count
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 @api_view(['POST'])
@@ -229,3 +231,14 @@ def get_sms_history(request):
     ]
 
     return paginator.get_paginated_response(history)
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['username'] = self.user.username
+        data['first_name'] = self.user.first_name
+        data['last_name'] = self.user.last_name
+        return data
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer

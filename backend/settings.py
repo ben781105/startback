@@ -71,6 +71,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://send-it-znjy.onrender.com"
    
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://send-it-znjy.onrender.com"
+]
 
 REST_FRAMEWORK = {
     

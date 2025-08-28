@@ -170,6 +170,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL ='accounts.CustomUser'
 
+
+import ssl
+from celery import Celery   
+
+app =Celery("backend")
+
+redis_url = os.getenv("REDIS_URL")
+
+app.conf.update(
+    broker_url=redis_url,
+    result_backend=redis_url,
+    broker_use_ssl={
+        'ssl_cert_reqs': ssl.CERT_NONE
+        } if redis_url.startswith('rediss://') else None
+)
+
+redis_backend_use_ssl={
+    'ssl_cert_reqs': ssl.CERT_NONE
+    } if redis_url.startswith('rediss://') else None
+
+
 CELERY_BROKER_URL =os.getenv("REDIS_URL")
 
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL")

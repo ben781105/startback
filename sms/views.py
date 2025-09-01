@@ -1,5 +1,4 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
+
 from rest_framework.response import Response
 from .tasks import send_bulk_sms_task
 from rest_framework.decorators import api_view,permission_classes
@@ -12,8 +11,7 @@ from rest_framework.pagination import PageNumberPagination
 from .serializers import ContactGroupSerializer, ContactSerializer
 from django.db import IntegrityError
 from django.db.models import Count
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.core.paginator import Paginator
 
 
 @api_view(['POST'])
@@ -224,7 +222,7 @@ def get_sms_history(request):
         {
             "message": sms.message,
             "number_of_recipients": len(sms.recipients) if sms.recipients else 0,
-            "status": "Message sent successfully" if sms.status == 'sent' else "Message not sent",
+            "status": "Message pending sending" if sms.status == 'queued' else "Message not sent",
             "sent_at": sms.sent_at
         }
         for sms in result_page
@@ -232,13 +230,47 @@ def get_sms_history(request):
 
     return paginator.get_paginated_response(history)
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data['username'] = self.user.username
-        data['first_name'] = self.user.first_name
-        data['last_name'] = self.user.last_name
-        return data
 
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def contact_list(request):
+    search_query = request.GET.get("search", "")
+    page_number = request.GET.get("page", 1)
+    page_size = int(request.GET.get("page_size", 10))
+
+    contacts = Contact.objects.filter(user=request.user).order_by("-created_at")
+
+    if search_query:
+        contacts = contacts.filter(phone_number__icontains=search_query)
+
+    paginator = Paginator(contacts, page_size)
+    page_obj = paginator.get_page(page_number)
+
+    serializer = ContactSerializer(page_obj, many=True)
+    results = serializer.data
+
+    for contact in results:
+        if contact.get('created_at'):
+            contact['created_at'] = contact['created_at'][:10].replace(" ", "-")
+
+    return Response({
+        "count": paginator.count,
+        "next": page_obj.has_next() and request.build_absolute_uri(f"?page={page_obj.next_page_number()}") or None,
+        "previous": page_obj.has_previous() and request.build_absolute_uri(f"?page={page_obj.previous_page_number()}") or None,
+        "results": results
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user(request):
+    user = request.user
+    data = {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "phone_number": user.phone_number,
+        
+    }
+    return Response(data)

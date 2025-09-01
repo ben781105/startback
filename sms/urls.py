@@ -13,6 +13,7 @@ urlpatterns = [
     path('contacts/<int:contact_id>/delete/', views.delete_contact,name='delete_contact'),
     path('groups/',views.get_groups,name='get_groups'),
     path('smshistory/',views.get_sms_history,name='get_sms_history'),
-    path('token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('contact_list/', views.contact_list, name='get_contacts'),
+    path('get_user/', views.get_user, name='get_user'),
 
 ]

@@ -13,9 +13,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 class ContactSerializer(serializers.ModelSerializer):
+    created_at= serializers.SerializerMethodField()
     class Meta:
         model = Contact
-        fields = ['id','phone_number','group']
+        fields = ['id','phone_number','created_at','group']
+
+    def get_created_at(self, obj):
+         return obj.created_at.strftime('%Y %m %d')
 
 
 class ContactGroupSerializer(serializers.ModelSerializer):

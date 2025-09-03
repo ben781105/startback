@@ -89,6 +89,20 @@ def get_user_profile(request):
         "email": user.email,
     })
 
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10  
+    page_size_query_param = "page_size"
+
+    def get_paginated_response(self, data):
+        return Response({
+            "count": self.page.paginator.count,
+            "page": self.page.number,  
+            "page_size": self.get_page_size(self.request),
+            "next": self.get_next_link(),
+            "previous": self.get_previous_link(),
+            "results": data,
+        })
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_group(request):
@@ -101,7 +115,7 @@ def create_group(request):
     return Response(serializer.data, status=201)
 
 
-from rest_framework.pagination import PageNumberPagination
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -117,8 +131,7 @@ def get_groups(request):
     
     groups = groups.annotate(contact_count=Count('contacts'))
 
-    paginator = PageNumberPagination()
-    paginator.page_size = 10
+    paginator = CustomPageNumberPagination()
     paginated_groups = paginator.paginate_queryset(groups, request)
 
     serializer = ContactGroupSerializer(paginated_groups, many=True)
@@ -252,10 +265,12 @@ def contact_list(request):
 
     for contact in results:
         if contact.get('created_at'):
-            contact['created_at'] = contact['created_at'][:10].replace(" ", "-")
+            contact['created_at'] = contact['created_at'].replace(" ", "-")
 
     return Response({
         "count": paginator.count,
+        "page_size":page_size,
+        "page":page_number,
         "next": page_obj.has_next() and request.build_absolute_uri(f"?page={page_obj.next_page_number()}") or None,
         "previous": page_obj.has_previous() and request.build_absolute_uri(f"?page={page_obj.previous_page_number()}") or None,
         "results": results
